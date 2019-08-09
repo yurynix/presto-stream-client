@@ -65,8 +65,8 @@ Instanciate client object and set default configurations.
   * enableVerboseStateCallback [boolean]
     * Enable more verbose callback for Presto query states (default: false)
     * When set to `true`, this flag modifies the condition of the state change callback to return data every `checkInterval`(default: 800ms). Modify `checkInterval` if you wish to change the frequency.
-    * Otherwise (`false`), the state change callback will only be called upon a change in state. 
-    * The purpose of this variable is to enable verbose update capability in state callbacks. This is such that "percentage complete" and "processed rows" may be extracted despite the state still remaining in a particular state eg. "RUNNING". 
+    * Otherwise (`false`), the state change callback will only be called upon a change in state.
+    * The purpose of this variable is to enable verbose update capability in state callbacks. This is such that "percentage complete" and "processed rows" may be extracted despite the state still remaining in a particular state eg. "RUNNING".
   * jsonParser [object]
     * Custom json parser if required (default: `JSON`)
 
@@ -131,6 +131,20 @@ Stop query immediately.
 
 * query_id [string]
 * callback [function(error) :optional]
+
+### pause(callback)
+
+Pause query result fetching (in case of backpressure from processing rows of data for example). Callback returns when successfully paused or if error
+
+* callback [function(error) : optional]
+
+### resume()
+
+Resume query result fetching. Resumes immediately, returns true if resumed successfuly or false if could not be resumed. (i.e. will return false if calling resume before the query has been successfully paused or if query is already running)
+
+### isPaused()
+
+Check if query has been paused. Returns true if paused and false if not paused.
 
 ### nodes(opts, callback)
 
