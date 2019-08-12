@@ -1,9 +1,9 @@
-# presto-client-node
+# presto-client-stream
 
 Distributed query engine "Presto" 's client library for node.js.
 
 ```js
-var presto = require('presto-client');
+var presto = require('presto-client-stream');
 var client = new presto.Client({user: 'myname'});
 
 client.execute({
@@ -22,10 +22,10 @@ client.execute({
 ## Installation
 
 ```
-npm install -g presto-client
+npm install -g presto-client-stream
 ```
 
-Or add `presto-client` to your own `packagen.json`, and do `npm install`.
+Or add `presto-client-stream` to your own `packagen.json`, and do `npm install`.
 
 ## API
 
@@ -131,20 +131,6 @@ Stop query immediately.
 
 * query_id [string]
 * callback [function(error) :optional]
-
-### pause(callback)
-
-Pause query result fetching (in case of backpressure from processing rows of data for example). Callback returns when successfully paused or if error
-
-* callback [function(error) : optional]
-
-### resume()
-
-Resume query result fetching. Resumes immediately, returns true if resumed successfuly or false if could not be resumed. (i.e. will return false if calling resume before the query has been successfully paused or if query is already running)
-
-### isPaused()
-
-Check if query has been paused. Returns true if paused and false if not paused.
 
 ### nodes(opts, callback)
 
