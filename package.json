@@ -1,21 +1,24 @@
 {
-  "name": "presto-client",
-  "version": "0.6.0",
+  "name": "presto-stream-client",
+  "version": "1.0.0",
   "description": "Distributed query engine Presto client library for node.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test && mocha --reporter spec"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tagomoris/presto-client-node.git"
+    "url": "git://github.com/serakfalcon/presto-stream-client.git"
   },
   "keywords": [
     "presto"
   ],
-  "author": "tagomoris",
+  "author": "serakfalcon",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tagomoris/presto-client-node/issues"
+    "url": "https://github.com/serakfalcon/presto-stream-client/issues"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.0"
   }
 }

@@ -1,5 +1,4 @@
-const fs = require('fs');
-const lib = require('./lib/presto-client');
-lib.version = JSON.parse(fs.readFileSync(__dirname + '/package.json')).version;
+const lib = require('./lib/index');
+lib.version = require('./package.json').version;
 
-exports.Client = lib.Client;
+exports = {Client:lib.Client};

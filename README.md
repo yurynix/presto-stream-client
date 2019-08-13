@@ -1,151 +1,145 @@
-# presto-client-stream
+# presto-stream-client
 
-Distributed query engine "Presto" 's client library for node.js.
+Node.js streaming client library for distributed query engine "Presto".
+Forked from [presto-client](https://github.com/tagomoris/presto-client-node)
 
 ```js
-var presto = require('presto-client-stream');
-var client = new presto.Client({user: 'myname'});
-
+const fs = require('fs');
+const { pipeline } = require('stream');
+const { Client } = require('presto-stream-client');
+const client = new Client({user: 'myname'});
 client.execute({
-  query:   'SELECT count(*) as cnt FROM tblname WHERE ...',
-  catalog: 'hive',
-  schema:  'default',
-  source:  'nodejs-client',
-  state:   function(error, query_id, stats){ console.log({message:"status changed", id:query_id, stats:stats}); },
-  columns: function(error, data){ console.log({resultColumns: data}); },
-  data:    function(error, data, columns, stats){ console.log(data); },
-  success: function(error, stats){},
-  error:   function(error){}
+    query:   'SELECT count(*) as cnt FROM tblname WHERE ...',
+    catalog: 'hive',
+    schema:  'default',
+    source:  'nodejs-client'
+}).then((statement)=>{
+    const writeStream = fs.createWriteStream('/path/to/file.csv');
+    statement.on('state_change',(query_id,stats)=>{
+        console.log(`state changed for query ${query_id}`);
+        console.log(stats);
+    });
+    pipeline(statement,
+        writeStream,
+        (err)=>{
+            if(err){
+                console.error(err);
+            } else {
+                console.log('done');
+            }
+    });
+},(error)=>{
+    console.error(error);
 });
+
 ```
 
 ## Installation
 
 ```
-npm install -g presto-client-stream
+npm install presto-stream-client
 ```
 
-Or add `presto-client-stream` to your own `packagen.json`, and do `npm install`.
+## Classes
 
-## API
+### Client
 
-### new Client(opts)
+#### Initalization
 
-Instanciate client object and set default configurations.
-
+```js
+const client = new Client(opts);
+```
 * opts [object]
   * host [string]
     * Presto coordinator hostname or address (default: localhost)
-  * ssl [object]
-    * Setting a Hash object enables SSL and verify server certificate with options (default: `null`):
-      * `ca`: An authority certificate or array of authority certificates to check the remote host against
-      * `cert`: Public x509 certificate to use (default : `null`)
-      * `ciphers` : Default cipher suite to use. (default: https://nodejs.org/api/tls.html#tls_modifying_the_default_tls_cipher_suite)
-      * `key`: Private key to use for SSL (default: `null`)
-      * `passphrase`:  A string of passphrase for the private key or pfx (default: `null`)
-      * `pfx`: Certificate, Private key and CA certificates to use for SSL. (default: `null`).
-      * `rejectUnauthorized`: If not `false` the server will reject any connection which is not authorized with the list of supplied CAs. This option only has an effect if requestCert is `true` (default: `true`)
-      * `secureProtocol`: Optional SSL method to use. The possible values are listed as SSL_METHODS, use the function names as strings. For example, "SSLv3_method" to force SSL version 3 (default: `SSLv23_method`)
-      * `servername`: Server name for the SNI (Server Name Indication) TLS extension
+  * ssl [object] (optional)
+    * If provided, will connect via HTTPS instead of HTTP using the relevant ssl settings. Settings as per [Node.js core https module](https://nodejs.org/dist/latest-v10.x/docs/api/https.html#https_https_request_options_callback).
   * port [integer]
     * Presto coordinator port (default: 8080)
   * user [string]
     * Username of query (default: process user name)
+  * password [string] (optional)
+    * If provided, will pass user and password as Basic Authorization headers on all requests.
   * source [string]
     * Source of query (default: nodejs-client)
-  * basic_auth [object]
-    * Pass in a user and password to enable Authorization Basic headers on all requests.
-    * basic_auth: {user: "user", password: "password"} (default:null)
-  * catalog [string]
-    * Default catalog name
-  * schema [string]
-    * Default schema name
-  * checkInterval [integer]
-    * Interval milliseconds of each RPC to check query status (default: 800ms)
-  * enableVerboseStateCallback [boolean]
-    * Enable more verbose callback for Presto query states (default: false)
-    * When set to `true`, this flag modifies the condition of the state change callback to return data every `checkInterval`(default: 800ms). Modify `checkInterval` if you wish to change the frequency.
-    * Otherwise (`false`), the state change callback will only be called upon a change in state.
-    * The purpose of this variable is to enable verbose update capability in state callbacks. This is such that "percentage complete" and "processed rows" may be extracted despite the state still remaining in a particular state eg. "RUNNING".
+  * catalog [string] (optional)
+    * Default catalog name (note, if not provided, catalog must be specified at execution)
+  * schema [string] (optional)
+    * Default schema name (default: 'default')
+  * pollInterval [integer]
+    * frequency in milliseconds to poll for state changes before data is ready (default: 3000)
   * jsonParser [object]
     * Custom json parser if required (default: `JSON`)
 
-return value: client instance object
+#### Methods
 
-### execute(opts)
+##### execute(opts)
 
-This is an API to execute queries. (Using "/v1/statement" HTTP RPC.)
-
-Execute query on Presto cluster, and fetch results.
+Execute query on Presto cluster, and return a Promise that resolves to a statement object (a readable stream).
+ (Using "/v1/statement" HTTP RPC.)
 
 Attributes of opts [object] are:
 * query [string]
-* catalog [string]
-* schema [string]
+* catalog [string] (default: client catalog)
+* schema [string] (default: client schema)
 * timezone [string :optional]
 * info [boolean :optional]
-  * fetch query info (execution statistics) for success callback, or not (default false)
-* cancel [function() :optional]
-  * client stops fetch of query results if this callback returns `true`
-* state [function(error, query_id, stats) :optional]
-  * called when query stats changed
-    * `stats.state`: QUEUED, PLANNING, STARTING, RUNNING, FINISHED, or CANCELED, FAILED
-  * query_id
-    * id string like `20140214_083451_00012_9w6p5`
-  * stats
-    * object which contains running query status
-* columns [function(error, data) :optional]
-  * called once when columns and its types are found in results
-  * data
-    * array of field info
-    * `[ { name: "username", type: "varchar" }, { name: "cnt", type: "bigint" } ]`
-* data [function(error, data, columns, stats) :optional]
-  * called per fetch of query results (may be called 2 or more)
-  * data
-    * array of array of each column
-    * `[ [ "tagomoris", 1013 ], [ "dain", 2056 ], ... ]`
-  * columns (optional)
-    * same as data of `columns` callback
-  * stats (optional)
-    * runtime statistics object of query
-* success [function(error, stats, info) :optional]
-  * called once when all results are fetched (default: value of `callback`)
-* error [function(error) :optional]
-  * callback for errors of query execution (default: value of `callback`)
-* callback [function(error, stats) :optional]
-  * callback for query completion (both of success and fail)
-  * one of `callback` or `success` must be specified
+  * fetch query info (execution statistics) for success event, or not (default false)
 
-Callbacks order (success query) is: columns -> data (-> data xN) -> success (or callback)
+#### status(query_id)
 
-### query(query_id, callback)
-
-Get query current status. (Same with 'Raw' of Presto Web in browser.)
+Get query current status based on query_id. (Same with 'Raw' of Presto Web in browser.)
 
 * query_id [string]
-* callback [function(error, data)]
 
-### kill(query_id, callback)
+returns a promise that resolves to the status response from Presto
 
-Stop query immediately.
+#### kill(query_id)
+
+Stop a query based on query_id.
+Returns a promise that resolves when the query is stopped by Presto
 
 * query_id [string]
-* callback [function(error) :optional]
 
-### nodes(opts, callback)
+#### nodes()
 
-Get node list of presto cluster and return it.
+Get node list of the presto cluster and returns it.
+(returns a promise that resolves to response from presto)
 
-* opts [object :optional]
-  * specify null, undefined or `{}` (currently)
-* callback [function(error,data)]
-  * error
-  * data
-    * array of node objects
+### Statement object
+
+returned by a Client from the execute statment.
+Statements are readable streams with the below additional methods & events:
+
+Methods:
+
+* cancel() (returns promise)
+    * stops retrieving the result set, ends the stream, and attempts to cancel the query in Presto.
+
+Events:
+
+* state: fires every pollInterval from query start until query is FINISHED, CANCELED or FAILED (not guaranteed to fire if CANCELED or FAILED)
+    * query_id string - ID of query
+    * stats object - running query stats
+
+* state_change: fires every time the query changes state e.g. once on QUEUED, PLANNING, STARTING, RUNNING, FINISHED, or CANCELED, FAILED
+    * query_id string - ID of query
+    * stats object - running query stats
+
+* columns: fires once, the first time the columns are provided in a response from Presto.
+    * data: array of field info
+        * `[ { name: "username", type: "varchar" }, { name: "cnt", type: "bigint" } ]`
+* data: Implemented as per Readable Stream. If in object mode, will be an array containing a single row of data (unlabeled). If not in object mode, will be a CSV-formatted string. The first data event will be the columns.
+
+* success: fires once on successfull completion of data retrieval.
+    * data: Object containing 'stats' property. If `info === true`  will also contain an 'info' property.
+
+* error: Implemented as per Readable Stream. Fires if there is an error. Please note: Stream error events by default crash node if not handled.
+
 
 ## BIGINT value handling
 
-Javascript standard `JSON` module cannot handle BIGINT values correctly by precision problems.
+Javascript standard `JSON` module cannot handle BIGINT values correctly due to floating point precision problems.
 
 ```js
 JSON.parse('{"bigint":1139779449103133602}').bigint //=> 1139779449103133600
@@ -154,10 +148,10 @@ JSON.parse('{"bigint":1139779449103133602}').bigint //=> 1139779449103133600
 If your query puts numeric values in its results and precision is important for that query, you can swap JSON parser with any modules which has `parse` method.
 
 ```js
-var JSONbig = require('json-bigint');
+const JSONbig = require('json-bigint');
 JSONbig.parse('{"bigint":1139779449103133602}').bigint.toString() //=> "1139779449103133602"
 // set client option
-var client = new presto.Client({
+const client = new Client({
   // ...
   jsonParser: JSONbig,
   // ...
@@ -166,45 +160,10 @@ var client = new presto.Client({
 
 ## Versions
 
-* 0.6.0:
-  * add X-Presto-Source if "source" specified
-* 0.5.0:
-  * remove support for execute(arg, callback) using `/v1/execute`
-* 0.4.0:
-  * add a parameter to call status callback in verbose
-* 0.3.0:
-  * add Basic Authentication support
-* 0.2.0:
-  * add HTTPS support
-* 0.1.3:
-  * add X-Presto-Time-Zone if "timezone" specified
-* 0.1.2:
-  * add X-Presto-Session if "session" specified
-* 0.1.1:
-  * fix bug not to handle HTTP level errors correctly
-* 0.1.0:
-  * add option to pass customized json parser to handle BIGINT values
-  * add check for required callbacks of query execution
-* 0.0.6:
-  * add API to get/delete queries
-  * add callback `state` on query execution
-* 0.0.5:
-  * fix to do error check on query execution
-* 0.0.4:
-  * send cancel request of canceled query actually
-* 0.0.3:
-  * simple and immediate query execution support
-* 0.0.2: maintenance release
-  * add User-Agent header with version
-* 0.0.1: initial release
-
-## Todo
-
-* node: "failed" node list support
-* patches welcome!
+* 1.0.1 Initial release
 
 ## Author & License
 
-* tagomoris
+* serakfalcon (original code by tagomoris)
 * License:
   * MIT (see LICENSE)
