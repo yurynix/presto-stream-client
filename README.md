@@ -13,8 +13,8 @@ const client = new Client({user: 'myname'});
 (async ()=>{
     const statement = await client.execute({query:'SELECT count(*) as cnt FROM tblname WHERE ...'});
     const writeStream = fs.createWriteStream('/path/to/file.csv');
-    statement.on('state_change',(query_id,stats)=>{
-        console.log(`state changed for query ${query_id}`);
+    statement.on('state_change',(stats)=>{
+        console.log(`state changed for query ${statement.query_id}`);
         console.log(stats);
     });
     await pipeline(statement,writeStream);
