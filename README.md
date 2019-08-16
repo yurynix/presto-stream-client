@@ -189,7 +189,7 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 
 # Versions
 
-* 1.0.1 Initial release
+* {{version}} Initial release
 
 # Author & License
 

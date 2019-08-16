@@ -4,7 +4,9 @@
   "description": "Distributed query engine Presto client library for node.js",
   "main": "lib/index.js",
   "scripts": {
-    "test": "cd test && mocha --reporter spec"
+    "test": "cd test && mocha --reporter spec",
+    "prepublishOnly":"node bin/prepublish.js",
+    "postpublish":"node bin/postpublish.js"
   },
   "repository": {
     "type": "git",
