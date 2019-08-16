@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const { promisify } = require('util');
+const { pipeline } = require('stream');
 const { Client } = require('../lib/index');
 if(!fs.existsSync(path.join(__dirname,'testconfigs.js'))){
     console.error('Error, tests of the presto client have a dependency on presto configuration settings.');
@@ -17,7 +19,7 @@ const describes = [
     'client with password & SSL'
 ];
 
-for (let i = 0; i < 1; i++) {
+for (let i = 0; i < 4; i++) {
     describe(describes[i],function(){
         before('can create a new client',function(){
             clients[i] = new Client(configs.client[i]);
@@ -28,8 +30,8 @@ for (let i = 0; i < 1; i++) {
         it('can query cluster',async function(){
             console.log(await clients[i].cluster());
         });
-        it.skip('can execute a query in object mode',async function(){
-            this.timeout(120000);
+        it('can execute a query in object mode',async function(){
+            this.timeout(60000);
             const statement = await clients[i].execute({query:configs.query[i],objectMode:true});
             await new Promise((resolve,reject)=>{
                 statement.on('state_change',(state,info)=>{
@@ -48,24 +50,17 @@ for (let i = 0; i < 1; i++) {
             });
         });
 
-        it.skip('can execute a query in file mode',async function(){
-            this.timeout(120000);
+        it('can execute a query in file mode',async function(){
+            this.timeout(60000);
             const statement = await clients[i].execute({query:configs.query[i]});
-            await new Promise((resolve,reject)=>{
-                statement.on('state_change',(state,info)=>{
-                    console.log(state);
-                    console.log(info);
-                }).on('data',(row)=>{
-                    console.log(row);
-                }).on('columns',(columns)=>{
-                    console.log(columns);
-                }).on('error',(e)=>{
-                    console.error(e);
-                    return reject(e);
-                }).on('end',()=>{
-                    return resolve();
-                });
+            const writeStream = fs.createWriteStream(path.resolve(__dirname,'test.csv'));
+            statement.on('state_change',(state,info)=>{
+                console.log(state);
+                console.log(info);
+            }).on('columns',(columns)=>{
+                console.log(columns);
             });
+            await promisify(pipeline)(statement,writeStream);
         });
 
         it.skip('can cancel a query from client.kill',async function(){
