@@ -189,7 +189,7 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 
 # Versions
 
-* 1.07 Current release (minor bugfix for better handling of presto server errors (code 500))
+* 1.08 Current release (minor bugfix for better handling of presto server errors (code 500))
 * 1.06 Initial release
 
 # Author & License
