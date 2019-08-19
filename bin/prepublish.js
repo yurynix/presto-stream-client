@@ -1,8 +1,5 @@
 const fs = require('fs');
-const { version } = require('../package.json');
-const readme = fs.readFileSync('../README.md','utf8');
-fs.writeFileSync('../README.md',readme.replace('{{version}}',version));
-const index = fs.readFileSync('../lib/index.js','utf8');
-fs.writeFileSync('../lib/index.js',index.replace(`require('../package.json').version`),`"${version}"`);
-
-
+const path = require('path');
+const { version } = require(path.resolve(__dirname,'../package.json'));
+const index = fs.readFileSync(path.resolve(__dirname,'../lib/index.js'),'utf8');
+fs.writeFileSync(path.resolve(__dirname,'../lib/index.js'),index.replace(`require('../package.json').version`),`"${version}"`);
