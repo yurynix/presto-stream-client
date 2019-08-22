@@ -24,7 +24,7 @@ for (let i = 0; i < 4; i++) {
         before('can create a new client',function(){
             clients[i] = new Client(configs.client[i]);
         });
-        it.skip('can query nodes',async function(){
+        it('can query nodes',async function(){
             console.log(await clients[i].nodes());
         });
         it('can query cluster',async function(){
@@ -63,7 +63,7 @@ for (let i = 0; i < 4; i++) {
             await promisify(pipeline)(statement,writeStream);
         });
 
-        it.skip('can cancel a query from client.kill',async function(){
+        it('can cancel a query from client.kill',async function(){
             this.timeout(60000);
             const statement = await clients[i].execute({query:configs.query[i]});
             statement.on('state_change',(state,info)=>{
@@ -79,7 +79,7 @@ for (let i = 0; i < 4; i++) {
 
         });
 
-        it.skip('can cancel a query from statement.cancel',async function(){
+        it('can cancel a query from statement.cancel',async function(){
             this.timeout(60000);
             const statement = await clients[i].execute({query:configs.query[i]});
             statement.on('state_change',(state,info)=>{
@@ -95,7 +95,7 @@ for (let i = 0; i < 4; i++) {
             statusQueryIds[i] = statement.query_id;
         });
 
-        it.skip('can retreive a existing queries status',async function(){
+        it('can retreive a existing queries status',async function(){
             console.log(await clients[i].status(statusQueryIds[i]));
         });
     });
