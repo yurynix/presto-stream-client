@@ -188,8 +188,8 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 * Proper support for Sessions is somewhat experimental and not fully tested.
 
 # Versions
-
-* 1.09 Current release (bugfixes to work around stream.Readable calling _run too much and remove unhandledPromiseRejection warning for error 410 from Presto )
+* 1.10 Current release (bugfix to better handle JSON fields)
+* 1.09 bugfixes to work around stream.Readable calling _run too much and remove unhandledPromiseRejection warning for error 410 from Presto
 * 1.08 Minor bugfix for better handling of presto server errors (code 500))
 * 1.06 Initial release
 
