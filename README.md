@@ -188,10 +188,11 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 * Proper support for Sessions is somewhat experimental and not fully tested.
 
 # Versions
-* 1.10 Current release (bugfix to better handle JSON fields)
-* 1.09 bugfixes to work around stream.Readable calling _run too much and remove unhandledPromiseRejection warning for error 410 from Presto
-* 1.08 Minor bugfix for better handling of presto server errors (code 500))
-* 1.06 Initial release
+* 1.0.11 Current release - consistently escape JSON as string in CSV to ensure newlines etc. don't break CSV
+* 1.0.10 bugfix to better handle JSON fields in CSV mode
+* 1.0.9 bugfixes to work around stream.Readable calling _run too much and remove unhandledPromiseRejection warning for error 410 from Presto
+* 1.0.8 Minor bugfix for better handling of presto server errors (code 500))
+* 1.0.6 Initial release
 
 # Author & License
 
