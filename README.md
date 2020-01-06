@@ -188,8 +188,9 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 * Proper support for Sessions is somewhat experimental and not fully tested.
 
 # Versions
-* 1.0.12 Current release - add the data property to prestoError in case of obscure or unclear presto errors.
-* 1.0.11 bugfix consistently escape JSON as string in CSV to ensure newlines etc. don't break CSV
+* 1.0.13 - Current release, in case of abnormal presto errors, extract full response of presto to prestoError object.
+* 1.0.12 - bugfix for CSV export of large datasets.
+* 1.0.11 consistently escape JSON as string in CSV to ensure newlines etc. don't break CSV
 * 1.0.10 bugfix to better handle JSON fields in CSV mode
 * 1.0.9 bugfixes to work around stream.Readable calling _run too much and remove unhandledPromiseRejection warning for error 410 from Presto
 * 1.0.8 Minor bugfix for better handling of presto server errors (code 500))
