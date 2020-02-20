@@ -188,7 +188,8 @@ Unit tests are only partially implemented. help extending the tests is appreciat
 * Proper support for Sessions is somewhat experimental and not fully tested.
 
 # Versions
-* 1.0.13 - Current release, in case of abnormal presto errors, extract full response of presto to prestoError object.
+* 1.0.14 - Current release, add bugfix to handle situation when response from Presto is unexpectely empty or malformed. Standardize error handling.
+* 1.0.13 - in case of abnormal presto errors, extract full response of presto to prestoError object.
 * 1.0.12 - bugfix for CSV export of large datasets.
 * 1.0.11 consistently escape JSON as string in CSV to ensure newlines etc. don't break CSV
 * 1.0.10 bugfix to better handle JSON fields in CSV mode
